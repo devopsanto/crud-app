@@ -25,19 +25,18 @@ pipeline {
             }
         }
 
-        stage('Docker Build And Push') {
-            steps {
-             script {
-    // Add 'DOCKER_BUILDKIT=0' before the build command
-    withEnv(['DOCKER_BUILDKIT=0']) {
-        docker.withRegistry('', 'docker-cred') {
-            def image = docker.build("pekker123/crud-123:latest")
-            image.push()
+     stage('Docker Build And Push') {
+    steps {
+        script {
+            withEnv(['DOCKER_BUILDKIT=0']) {
+                docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
+                    def image = docker.build("pekker123/crud-123:latest")
+                    image.push()
+                }
+            }
         }
     }
 }
-            }
-        }
 
         stage('Deploy To EC2') {
             steps {
