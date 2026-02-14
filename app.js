@@ -1,91 +1,73 @@
-const express = require('express');
-const mysql = require('mysql');
-const bodyParser = require('body-parser');
-const path = require('path');
+const express = require("express");
+const mysql = require("mysql2");
+const bodyParser = require("body-parser");
+const path = require("path");
 
 const app = express();
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
-const port = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Create connection to MySQL
+// MySQL connection
 const db = mysql.createConnection({
-    host: 'database-1.c9cm4o24iz64.ap-south-1.rds.amazonaws.com',
-    user: 'root',
-    password: '918122756068',
-    database: 'database-1'
+  host: process.env.DB_HOST || "database-1.c9cm4o24iz64.ap-south-1.rds.amazonaws.com",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASS || "918122756068",
+  database: process.env.DB_NAME || "database-1",
 });
 
-// Connect to MySQL
+// Connect DB
 db.connect((err) => {
+  if (err) {
+    console.error("❌ MySQL connection failed:", err.message);
+    process.exit(1);
+  }
+  console.log("✅ MySQL Connected...");
+});
+
+// Home route
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Create table
+app.get("/createTable", (req, res) => {
+  const sql = `
+    CREATE TABLE IF NOT EXISTS items (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL
+    )
+  `;
+
+  db.query(sql, (err) => {
     if (err) {
-        throw err;
+      console.error("❌ Table create error:", err.message);
+      return res.status(500).send("Error creating table");
     }
-    console.log('MySQL Connected...');
+    res.send("✅ Items table created (or already exists).");
+  });
 });
 
-// Serve the HTML file
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+// Insert item
+app.post("/addItem", (req, res) => {
+  const { name } = req.body;
 
-// Create a table
-app.get('/createTable', (req, res) => {
-    let sql = 'CREATE TABLE IF NOT EXISTS items(id int AUTO_INCREMENT, name VARCHAR(255), PRIMARY KEY(id))';
-    db.query(sql, (err, result) => {
-        if (err) throw err;
-        res.send('Items table created...');
-    });
-});
+  if (!name || name.trim() === "") {
+    return res.status(400).send("❌ Name is required");
+  }
 
-// Insert an item
-app.post('/addItem', (req, res) => {
-    let item = { name: req.body.name };
-    let sql = 'INSERT INTO items SET ?';
-    db.query(sql, item, (err, result) => {
-        if (err) throw err;
-        res.send('Item added...');
-    });
+  const sql = "INSERT INTO items (name) VALUES (?)";
+
+  db.query(sql, [name], (err) => {
+    if (err) {
+      console.error("❌ Insert error:", err.message);
+      return res.status(500).send("Error adding item");
+    }
+    res.send("✅ Item added successfully");
+  });
 });
 
 // Get all items
-app.get('/getItems', (req, res) => {
-    let sql = 'SELECT * FROM items';
-    db.query(sql, (err, results) => {
-        if (err) throw err;
-        res.json(results);
-    });
-});
-
-// Get a single item by ID
-app.get('/getItem/:id', (req, res) => {
-    let sql = `SELECT * FROM items WHERE id = ${req.params.id}`;
-    db.query(sql, (err, result) => {
-        if (err) throw err;
-        res.json(result);
-    });
-});
-
-// Update an item
-app.put('/updateItem/:id', (req, res) => {
-    let newName = req.body.name;
-    let sql = `UPDATE items SET name = ? WHERE id = ?`;
-    db.query(sql, [newName, req.params.id], (err, result) => {
-        if (err) throw err;
-        res.send('Item updated...');
-    });
-});
-
-// Delete an item
-app.delete('/deleteItem/:id', (req, res) => {
-    let sql = `DELETE FROM items WHERE id = ?`;
-    db.query(sql, [req.params.id], (err, result) => {
-        if (err) throw err;
-        res.send('Item deleted...');
-    });
-});
-
-app.listen(port, () => {
-    console.log(`Server started on port ${port}`);
-});
+app.get("/getItems", (req, res) => {
+  const s
