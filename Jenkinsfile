@@ -30,7 +30,7 @@ pipeline {
         script {
             withEnv(['DOCKER_BUILDKIT=0']) {
                 docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
-                    def image = docker.build("pekker123/crud-123:latest")
+                    def image = docker.build("santodass/crud-123:latest")
                     image.push()
                 }
             }
@@ -43,7 +43,7 @@ pipeline {
                 script {
                     // Clean up old containers and run the new one
                     sh 'docker rm -f $(docker ps -aq) || true'
-                    sh 'docker run -d -p 3000:3000 pekker123/crud-123:latest'
+                    sh 'docker run -d -p 3000:3000 santodass/crud-123:latest'
                 }
             }
         }
