@@ -9,7 +9,7 @@ pipeline {
         SCANNER_HOME = tool 'sonar-scanner'
         SONAR_TOKEN = credentials('SONAR_TOKEN')
         SONAR_ORGANIZATION = 'santo'
-        SONAR_PROJECT_KEY = 'santo'
+        SONAR_PROJECT_KEY = 'santo_santo'
     }
 
     stages {
@@ -17,9 +17,10 @@ pipeline {
         stage('Code-Analysis') {
             steps {
                 withSonarQubeEnv('SonarCloud') {
-                    sh '''$SCANNER_HOME/bin/sonar-scanner \
+                    sh '''$SCANNER_HOME/bin/
+                    sonar-scanner \
   -Dsonar.organization=santo \
-  -Dsonar.projectKey=santo \
+  -Dsonar.projectKey=santo_santo
   -Dsonar.sources=. \
   -Dsonar.host.url=https://sonarcloud.io '''
                 }
