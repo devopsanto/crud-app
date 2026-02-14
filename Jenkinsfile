@@ -16,7 +16,7 @@ pipeline {
         
         stage('Code-Analysis') {
             steps {
-                withSonarQubeEnv('SonarCloud') {
+                withSonarQubeEnv('sonarcloud') {
                     sh '''$SCANNER_HOME/bin/sonar-scanner \
  -Dsonar.organization=santo \
   -Dsonar.projectKey=santo_santo
