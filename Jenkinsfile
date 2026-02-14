@@ -4,9 +4,9 @@ pipeline {
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
         SONAR_TOKEN  = credentials('SONAR_TOKEN')
+
         DOCKER_IMAGE = "santodass/crud-123"
-        EC2_HOST     = "43.205.91.29"
-        EC2_USER     = "ubuntu"   // change to ec2-user if Amazon Linux
+        EC2_HOST     = "13.200.40.76"
     }
 
     stages {
@@ -38,7 +38,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
-                        def image = docker.build("santodass/crud-123")
+                        def image = docker.build("${DOCKER_IMAGE}:latest")
                         image.push("latest")
                     }
                 }
@@ -47,25 +47,20 @@ pipeline {
 
         stage('Deploy to EC2') {
             steps {
-                sshagent(['ec2-key']) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'mac',
+                                                   keyFileVariable: 'SSH_KEY',
+                                                   usernameVariable: 'SSH_USER')]) {
                     sh """
-                    ssh -o StrictHostKeyChecking=no ubuntu@43.205.91.29 '
-                        docker pull santodass/crud-123:latest &&
+                    chmod 600 $SSH_KEY
+
+                    ssh -o StrictHostKeyChecking=no -i $SSH_KEY ubuntu@13.200.40.76 '
+                        docker pull ${DOCKER_IMAGE}:latest &&
                         docker rm -f crud-app || true &&
-                        docker run -d --name crud-app -p 3000:3000 santodass/crud-123:latest
+                        docker run -d --name crud-app -p 3000:3000 ${DOCKER_IMAGE}:latest
                     '
                     """
                 }
             }
-        }
-    }
-
-    post {
-        success {
-            echo "✅ Deployment completed successfully!"
-        }
-        failure {
-            echo "❌ Pipeline failed. Check logs."
         }
     }
 }
