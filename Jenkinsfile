@@ -19,8 +19,7 @@ pipeline {
                             -Dsonar.organization=santo \
                             -Dsonar.projectKey=santo_santo \
                             -Dsonar.sources=. \
-                            -Dsonar.host.url=https://sonarcloud.io
-                        """
+                            -Dsonar.host.url=https://sonarcloud.io """
                     }
                 }
             }
