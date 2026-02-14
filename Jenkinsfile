@@ -45,22 +45,23 @@ pipeline {
             }
         }
 
-        stage('Deploy To EC2') {
-            steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'mac',
-                                                   keyFileVariable: 'SSH_KEY',
-                                                   usernameVariable: 'SSH_USER')]) {
-                    sh """
-                    chmod 600 $SSH_KEY
+     stage('Deploy To EC2') {
+    steps {
+        withCredentials([sshUserPrivateKey(credentialsId: 'mac',
+                                           keyFileVariable: 'SSH_KEY',
+                                           usernameVariable: 'SSH_USER')]) {
+            sh """
+            chmod 600 $SSH_KEY
 
-                    ssh -o StrictHostKeyChecking=no -i mac ubuntu@13.200.40.76 '
-                        docker pull santodass/crud-123:latest &&
-                        docker rm -f crud-app || true &&
-                        docker run -d --name crud-app -p 3000:3000 santodass/crud-123:latest
-                    '
-                    """
-                }
-            }
+            ssh -o StrictHostKeyChecking=no -i $SSH_KEY ubuntu@13.200.40.76 '
+                docker pull santodass/crud-123:latest &&
+                docker rm -f crud-app || true &&
+                docker run -d --name crud-app -p 3000:3000 santodass/crud-123:latest
+            '
+            """
         }
+    }
+}
+
     }
 }
