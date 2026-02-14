@@ -1,29 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        // Ensure 'sonar-scanner' is configured in Global Tool Configuration
-        SCANNER_HOME = tool 'sonar-scanner'
-        // Ensure 'SONAR_TOKEN' is a 'Secret Text' credential ID
-        SONAR_TOKEN = credentials('SONAR_TOKEN')
-        SONAR_ORGANIZATION = 'santo'
-        SONAR_PROJECT_KEY = 'santo_santo'
-    }
-
-    stages {
-        stage('Code-Analysis') {
-            steps {
-                // 'sonarcloud' must match the name in Manage Jenkins > System
-                withSonarQubeEnv('sonarcloud') {
-                    sh """${SCANNER_HOME}/bin/sonar-scanner \
-                        -Dsonar.organization=${SONAR_ORGANIZATION} \
-                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=https://sonarcloud.io \
-                        -Dsonar.login=${SONAR_TOKEN}"""
-                }
-            }
-        }
 
         stage('Docker Build And Push') {
             steps {
