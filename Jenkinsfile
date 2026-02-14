@@ -27,13 +27,15 @@ pipeline {
 
         stage('Docker Build And Push') {
             steps {
-                script {
-                    // Use 'docker-cred' for DockerHub authentication
-                    docker.withRegistry('', 'docker-cred') {
-                        def image = docker.build("pekker123/crud-123:latest")
-                        image.push()
-                    }
-                }
+             script {
+    // Add 'DOCKER_BUILDKIT=0' before the build command
+    withEnv(['DOCKER_BUILDKIT=0']) {
+        docker.withRegistry('', 'docker-cred') {
+            def image = docker.build("pekker123/crud-123:latest")
+            image.push()
+        }
+    }
+}
             }
         }
 
