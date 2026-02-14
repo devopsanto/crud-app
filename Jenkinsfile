@@ -12,22 +12,23 @@ pipeline {
         SONAR_PROJECT_KEY = 'santo_santo'
     }
 
-    stages {
-        
-        stage('Code-Analysis') {
-            steps {
-                withSonarQubeEnv('SonarCloud') {
-                    sh '''$SCANNER_HOME/bin/
-                    sonar-scanner \
-  -Dsonar.organization=santo \
+ 
+      
+        stage('SonarQube Analysis') {
+    steps {
+        script {
+            // This string "SonarCloud" must match the Global Config Name
+            def scannerHome = tool 'SonarScanner'
+            withSonarQubeEnv('SonarCloud') { 
+                sh "${scannerHome}/bin/sonar-scanner"
+                -Dsonar.organization=santo \
   -Dsonar.projectKey=santo_santo
   -Dsonar.sources=. \
   -Dsonar.host.url=https://sonarcloud.io '''
-                }
             }
         }
-       
-        
+    }
+}
       
        stage('Docker Build And Push') {
             steps {
